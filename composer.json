@@ -1,0 +1,18 @@
+{
+    "name": "absorbing/csv-model",
+    "type": "library",
+    "require": {
+        "illuminate/collections": "^12.14",
+        "illuminate/support": "^12.14"
+    },
+    "autoload": {
+        "psr-4": {
+            "Absorbing\\LaravelCsvModel\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Absorbing"
+        }
+    ]
+}
