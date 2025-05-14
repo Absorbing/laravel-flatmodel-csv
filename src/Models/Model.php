@@ -3,16 +3,12 @@
 namespace Absorbing\CsvModel;
 
 use Illuminate\Support\Collection;
+use Absorbing\CsvModel\Traits\Queryable;
+use Absorbing\CsvModel\Traits\ResolvesPrimaryKey;
 
 abstract class Model
 {
-    /**
-     * The primary key column name used to uniquely identify records in the CSV file.
-     * Defaults to 'id' if not specified in the configuration.
-     *
-     * @var string|null
-     */
-    protected ?string $primaryKey;
+    use Queryable, ResolvesPrimaryKey;
 
     /**
      * Array of column headers from the CSV file.
@@ -55,14 +51,6 @@ abstract class Model
      * @var array<int,array<string,mixed>> Array of rows where each row is an associative array
      */
     protected array $rows = [];
-
-    /**
-     * Stores query constraints for filtering data.
-     * Used to build complex queries with multiple conditions.
-     *
-     * @var array<callable> Array of filter callbacks
-     */
-    protected array $queryConstraints = [];
 
     /**
      * The delimiter character used to separate fields in the CSV file.
@@ -152,59 +140,13 @@ abstract class Model
         return $row;
     }
 
-    public function all(): Collection
-    {
-        return collect($this->rows);
-    }
-
     /**
-     * Searches for a record in the rows based on the provided value and primary key.
+     * Returns the complete set of data rows for querying.
      *
-     * @param string $value The value to search for in the rows using the primary key.
-     * @return array|null Returns the matching row as an associative array if found, or null if no match is found.
+     * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
      */
-    public function find(string $value): ?array
+    protected function getRows(): array
     {
-        if(!$this->primaryKey) {
-            throw new \RuntimeException('Cannot call find() without setting $primaryKey');
-        }
-
-        foreach($this->rows as $row) {
-            if(($row[$this->primaryKey] ?? null) == $value) {
-                return $row;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Retrieves filtered rows based on applied constraints.
-     *
-     * @return \Illuminate\Support\Collection Collection of filtered rows
-     */
-    public function get(): Collection
-    {
-        $filtered = $this->rows;
-
-        foreach($this->queryConstraints as $constraint) {
-            $filtered = array_filter($filtered, $constraint);
-        }
-
-        $this->queryConstraints = [];
-        return collect(array_values($filtered));
-    }
-
-    /**
-     * Adds a where clause to filter rows based on column value.
-     *
-     * @param string $column The column name to filter on
-     * @param string $value The value to match against
-     * @return static Returns the current instance for method chaining
-     */
-    public function where(string $column, string $value): static
-    {
-        $this->queryConstraints[] = fn($row) => ($row[$column] ?? null) == $value;
-        return $this;
+        return $this->rows;
     }
 }
