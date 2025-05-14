@@ -3,7 +3,6 @@
 namespace Absorbing\CsvModel;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support;
 
 abstract class Model
 {
@@ -57,6 +56,38 @@ abstract class Model
      */
     protected array $rows = [];
 
+    /**
+     * Stores query constraints for filtering data.
+     * Used to build complex queries with multiple conditions.
+     *
+     * @var array<callable> Array of filter callbacks
+     */
+    protected array $queryConstraints = [];
+
+    /**
+     * The delimiter character used to separate fields in the CSV file.
+     * Defaults to comma (,).
+     *
+     * @var string
+     */
+    protected string $delimiter = ',';
+
+    /**
+     * The enclosure character used to wrap field values in the CSV file.
+     * Defaults to double quote (").
+     *
+     * @var string
+     */
+    protected string $enclosure = '"';
+
+    /**
+     * The escape character used in the CSV file.
+     * Defaults to backslash (\).
+     *
+     * @var string
+     */
+    protected string $escape = '\\';
+
     public function __construct()
     {
         $this->loadCsv();
@@ -84,9 +115,27 @@ abstract class Model
             throw new \RuntimeException("Cannot open CSV file at {$this->path}");
         }
 
+        $this->headers = $this->headers ?: fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
 
+        while(($line = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
+            $row = array_combine($this->headers, $line);
+
+            if($this->primaryKey && !isset($row[$this->primaryKey])) {
+                throw new \RuntimeException("Primary key '{$this->primaryKey}' not found in CSV row");
+            }
+
+            $this->rows[] = $this->castRow($row);
+        }
+
+        fclose($handle);
     }
 
+    /**
+     * Casts row values according to the defined casting rules in $cast property.
+     *
+     * @param array<string,mixed> $row Associative array representing a CSV row
+     * @return array<string,mixed> The row with values cast to their specified types
+     */
     protected function castRow(array $row): array
     {
         foreach ($this->cast as $key => $type) {
@@ -103,9 +152,9 @@ abstract class Model
         return $row;
     }
 
-    public function all(): array
+    public function all(): Collection
     {
-        return $this->rows;
+        return collect($this->rows);
     }
 
     /**
@@ -116,6 +165,10 @@ abstract class Model
      */
     public function find(string $value): ?array
     {
+        if(!$this->primaryKey) {
+            throw new \RuntimeException('Cannot call find() without setting $primaryKey');
+        }
+
         foreach($this->rows as $row) {
             if(($row[$this->primaryKey] ?? null) == $value) {
                 return $row;
@@ -125,11 +178,33 @@ abstract class Model
         return null;
     }
 
-    public function where(string $column, string $value): array
+    /**
+     * Retrieves filtered rows based on applied constraints.
+     *
+     * @return \Illuminate\Support\Collection Collection of filtered rows
+     */
+    public function get(): Collection
     {
-        return array_filter(
-            $this->rows,
-            fn($row) => ($row[$column] ?? null) == $value
-        );
+        $filtered = $this->rows;
+
+        foreach($this->queryConstraints as $constraint) {
+            $filtered = array_filter($filtered, $constraint);
+        }
+
+        $this->queryConstraints = [];
+        return collect(array_values($filtered));
+    }
+
+    /**
+     * Adds a where clause to filter rows based on column value.
+     *
+     * @param string $column The column name to filter on
+     * @param string $value The value to match against
+     * @return static Returns the current instance for method chaining
+     */
+    public function where(string $column, string $value): static
+    {
+        $this->queryConstraints[] = fn($row) => ($row[$column] ?? null) == $value;
+        return $this;
     }
 }
