@@ -1,0 +1,76 @@
+<?php
+
+namespace Absorbing\CsvModel\Console;
+
+use Illuminate\Console\GeneratorCommand;
+use Symfony\Component\Console\InputOption;
+
+class MakeCsvModel extends GeneratorCommand
+{
+    /**
+     * The name of the command used to generate a CSV model.
+     */
+    protected string $name = 'make:csv-model';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new CSV-backed model class';
+
+    /**
+     * The type of class being generated.
+     *
+     * @var string
+     */
+    protected string $type = 'CsvModel';
+
+    /**
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    protected function getStub(): string
+    {
+        return __DIR__ . '/stubs/csv-model.stub';
+    }
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param  string  $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace(string $rootNamespace): string
+    {
+        return $rootNamespace . '\Models';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            ['path', null, InputOption::VALUE_OPTIONAL, 'The CSV path to set inside the model', null],
+            ['primary', null, InputOption::VALUE_OPTIONAL, 'The primary key to set inside the model', null],
+        ];
+    }
+
+    protected function buildClass($name): string
+    {
+        $class = parent::buildClass($name);
+
+        $csvPath = $this->option('path') ?? 'csv/' class_basename($name) . '.csv';
+        $primaryKey = $this->option('primary') ?? null;
+
+        return str_replace([
+                'DummyCsvPath',
+                'DummyPrimaryKey',
+            ],
+            [
+                addslashes($csvPath),
+                addslashes($primaryKey),
+            ],
+        $class
+        );
+    }
+}

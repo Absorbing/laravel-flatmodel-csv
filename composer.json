@@ -15,5 +15,12 @@
         {
             "name": "Absorbing"
         }
-    ]
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Absorbing\\CsvModel\\CsvModelServiceProvider"
+            ]
+        }
+    }
 }

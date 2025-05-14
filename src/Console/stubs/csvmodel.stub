@@ -1,0 +1,16 @@
+<?php
+
+namespace DummyNamespace;
+
+use Absorbing\CsvModel\Model;
+
+class DummyClass extends Model
+{
+    protected string $path = 'DummyCsvPath';
+
+    protected ?string $primaryKey = 'DummyPrimaryKey';
+
+    protected array $cast = [
+        'id' => 'int',
+    ];
+}
