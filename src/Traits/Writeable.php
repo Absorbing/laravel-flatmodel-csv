@@ -2,7 +2,7 @@
 
 namespace FlatModel\CsvModel\Traits;
 
-trait Macroable
+trait Writeable
 {
 
 }

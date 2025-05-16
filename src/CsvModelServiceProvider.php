@@ -1,9 +1,9 @@
 <?php
 
-namespace Absorbing\CsvModel;
+namespace FlatModel\CsvModel;
 
 use Illuminate\Support\ServiceProvider;
-use Absorbing\CsvModel\Console\MakeCsvModel;
+use FlatModel\CsvModel\Console\MakeCsvModel;
 
 class CsvModelServiceProvider extends ServiceProvider
 {

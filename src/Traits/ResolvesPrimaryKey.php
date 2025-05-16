@@ -1,6 +1,6 @@
 <?php
 
-namespace Absorbing\CsvModel\Traits;
+namespace FlatModel\CsvModel\Traits;
 
 trait ResolvesPrimaryKey
 {
@@ -8,15 +8,6 @@ trait ResolvesPrimaryKey
      * @var string|null The name of the primary key column or null if not set
      */
     protected ?string $primaryKey;
-
-    /**
-     * Returns the complete set of data rows for querying.
-     * This abstract method must be implemented by classes using this trait
-     * to provide access to their underlying data storage.
-     *
-     * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
-     */
-    abstract protected function getRows(): array;
 
     /**
      * Get the primary key column name.
@@ -64,10 +55,39 @@ trait ResolvesPrimaryKey
 
         foreach ($this->getRows() as $row) {
             if (($row[$this->primaryKey] ?? null) == $value) {
-                return $row;
+                return $this->castRow($row);
             }
         }
 
         return null;
     }
+
+    /**
+     * Validates the presence of the primary key in the CSV headers.
+     *
+     * @throws \RuntimeException If the primary key is not found in the CSV headers
+     */
+    protected function validatePrimaryKeyPresence(): void
+    {
+        if ($this->hasPrimaryKey() && !isset($this->headers[$this->primaryKey])) {
+            throw new \RuntimeException("Primary key '{$this->primaryKey}' not found in CSV headers");
+        }
+    }
+
+    /**
+     * Casts row values according to the defined casting rules in $cast property.
+     *
+     * @param array<string,mixed> $row Associative array representing a CSV row
+     * @return array<string,mixed> The row with values cast to their specified types
+     */
+    abstract protected function castRow(array $row): array;
+
+    /**
+     * Returns the complete set of data rows for querying.
+     * This abstract method must be implemented by classes using this trait
+     * to provide access to their underlying data storage.
+     *
+     * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
+     */
+    abstract protected function getRows(): array;
 }

@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use Absorbing\CsvModel\Model;
+use FlatModel\CsvModel\Model;
 
 class DummyClass extends Model
 {

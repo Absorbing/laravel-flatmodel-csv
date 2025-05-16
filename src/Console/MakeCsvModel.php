@@ -1,6 +1,6 @@
 <?php
 
-namespace Absorbing\CsvModel\Console;
+namespace FlatModel\CsvModel\Console;
 
 use Illuminate\Console\GeneratorCommand;
 use Symfony\Component\Console\InputOption;
@@ -59,7 +59,7 @@ class MakeCsvModel extends GeneratorCommand
     {
         $class = parent::buildClass($name);
 
-        $csvPath = $this->option('path') ?? 'csv/' class_basename($name) . '.csv';
+        $csvPath = $this->option('path') ?? 'csv/' . class_basename($name) . '.csv';
         $primaryKey = $this->option('primary') ?? null;
 
         return str_replace([

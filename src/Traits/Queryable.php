@@ -1,6 +1,6 @@
 <?php
 
-namespace Absorbing\CsvModel\Traits;
+namespace FlatModel\CsvModel\Traits;
 
 use Illuminate\Support\Collection;
 
@@ -15,13 +15,11 @@ trait Queryable
     protected array $queryConstraints = [];
 
     /**
-     * Returns the complete set of data rows for querying.
-     * This abstract method must be implemented by classes using this trait
-     * to provide access to their underlying data storage.
+     * Columns to select from the data rows.
      *
-     * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
+     * @var array<string>|null
      */
-    abstract protected function getRows(): array;
+    protected ?array $selectedColumns = null;
 
     /**
      * Adds a where clause to filter rows based on column value.
@@ -35,7 +33,6 @@ trait Queryable
         $this->queryConstraints[] = fn($row) => ($row[$column] ?? null) == $value;
         return $this;
     }
-
 
     /**
      * Retrieves filtered rows based on applied constraints.
@@ -54,6 +51,71 @@ trait Queryable
         }
 
         $this->queryConstraints = [];
+
+        if ($this->selectedColumns !== null) {
+            $filtered = array_map(function ($row) {
+                return array_intersect_key(
+                    $this->castRow($row),
+                    array_flip($this->selectedColumns)
+                );
+            }, $filtered);
+
+            $this->selectedColumns = null;
+        }
+
         return collect(array_values($filtered));
     }
+
+    /**
+     * Select specific columns from the data rows.
+     *
+     * @param string ...$columns The column names to select
+     * @return static Returns the current instance for method chaining
+     */
+    public function select(string ...$columns): static
+    {
+        $this->selectedColumns = $columns;
+        return $this;
+    }
+
+    /**
+     * Retrieves a Collection containing only the values from a single column of the CSV data.
+     *
+     * @param string $column The name of the column to extract values from
+     * @return \Illuminate\Support\Collection A collection containing only the values from the specified column
+     * @throws \RuntimeException If the specified column does not exist in the CSV file
+     */
+    public function pluck(string $column): \Illuminate\Support\Collection
+    {
+        return $this->get()->pluck($column);
+    }
+
+    /**
+     * Retrieves the first value from a specified column in the CSV data.
+     *
+     * @param string $column The name of the column to extract the value from
+     * @return mixed The first value from the specified column
+     * @throws \RuntimeException If the specified column does not exist in the CSV file
+     */
+    public function value(string $column): mixed
+    {
+        return $this->pluck($column)->first();
+    }
+
+    /**
+     * Returns the complete set of data rows for querying.
+     * This abstract method must be implemented by classes using this trait
+     * to provide access to their underlying data storage.
+     *
+     * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
+     */
+    abstract protected function getRows(): array;
+
+    /**
+     * Casts row values according to the defined casting rules in $cast property.
+     *
+     * @param array<string,mixed> $row Associative array representing a CSV row
+     * @return array<string,mixed> The row with values cast to their specified types
+     */
+    abstract protected function castRow(array $row): array;
 }

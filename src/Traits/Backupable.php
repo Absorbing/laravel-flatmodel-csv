@@ -1,6 +1,6 @@
 <?php
 
-namespace Absorbing\CsvModel\Traits;
+namespace FlatModel\CsvModel\Traits;
 
 trait Backupable
 {

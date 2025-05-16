@@ -1,5 +1,5 @@
 {
-    "name": "absorbing/csv-model",
+    "name": "flatmodel/laravel-csv-flatmodel",
     "version": "dev-main",
     "type": "library",
     "require": {
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Absorbing\\CsvModel\\": "src/"
+            "FlatModel\\CsvModel\\": "src/"
         }
     },
     "authors": [
@@ -19,7 +19,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Absorbing\\CsvModel\\CsvModelServiceProvider"
+                "FlatModel\\CsvModel\\CsvModelServiceProvider"
             ]
         }
     }

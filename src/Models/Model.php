@@ -1,22 +1,19 @@
 <?php
 
-namespace Absorbing\CsvModel;
+namespace FlatModel\CsvModel\Models;
 
-use Illuminate\Support\Collection;
-use Absorbing\CsvModel\Traits\Queryable;
-use Absorbing\CsvModel\Traits\ResolvesPrimaryKey;
+use FlatModel\CsvModel\Traits\Castable;
+use FlatModel\CsvModel\Traits\LoadsFromSource;
+use FlatModel\CsvModel\Traits\Queryable;
+use FlatModel\CsvModel\Traits\ResolvesPrimaryKey;
 
 abstract class Model
 {
-    use Queryable, ResolvesPrimaryKey;
-
-    /**
-     * Array of column headers from the CSV file.
-     * Each element represents a column name in the order they appear.
-     *
-     * @var array<int,string>
-     */
-    protected array $headers = [];
+    use Queryable,
+        ResolvesPrimaryKey,
+        LoadsFromSource,
+        Castable,
+        HeaderAware;
 
     /**
      * The absolute or relative path to the CSV file that this model represents.
@@ -25,32 +22,6 @@ abstract class Model
      * @var string
      */
     protected string $path;
-
-    /**
-     * Defines type casting rules for CSV columns.
-     * Associates column names with their desired data types for automatic type conversion.
-     *
-     * Supported types:
-     * - 'int': Cast to integer
-     * - 'float': Cast to floating point number
-     * - 'bool': Cast to boolean
-     * - 'string': Cast to string
-     *
-     * Example:
-     * ['age' => 'int', 'price' => 'float', 'active' => 'bool']
-     *
-     * @var array<string,string> Key-value pairs where key is column name and value is target type
-     */
-    protected array $cast = [];
-
-    /**
-     * Stores the data rows read from the CSV file as an array of associative arrays.
-     * Each element represents one row from the CSV file where keys are column names
-     * from headers and values are the corresponding cell values.
-     *
-     * @var array<int,array<string,mixed>> Array of rows where each row is an associative array
-     */
-    protected array $rows = [];
 
     /**
      * The delimiter character used to separate fields in the CSV file.
@@ -76,69 +47,36 @@ abstract class Model
      */
     protected string $escape = '\\';
 
-    public function __construct()
-    {
-        $this->loadCsv();
-    }
+    /**
+     * Indicates whether the model operates in stream mode.
+     *
+     * @var bool
+     */
+    protected bool $stream = false;
 
     /**
-     * Loads data from a CSV file specified in the configuration and populates the headers and rows properties.
+     * Stores the data rows read from the CSV file as an array of associative arrays.
+     * Each element represents one row from the CSV file where keys are column names
+     * from headers and values are the corresponding cell values.
      *
-     * The method reads the CSV file using the provided configuration options such as path, delimiter, enclosure, and escape character.
-     * It parses the file, extracting headers and rows, and stores them appropriately.
-     * If a CSV file cannot be opened, an exception is thrown.
-     *
-     * @return void
-     * @throws \RuntimeException
+     * @var array<int,array<string,mixed>> Array of rows where each row is an associative array
      */
-    protected function loadCsv(): void
-    {
-        if(!isset($this->path)) {
-            throw new \RuntimeException('CSV file path not specified');
-        }
-
-        $handle = fopen(storage_path($this->path), 'r');
-
-        if(!$handle) {
-            throw new \RuntimeException("Cannot open CSV file at {$this->path}");
-        }
-
-        $this->headers = $this->headers ?: fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape);
-
-        while(($line = fgetcsv($handle, 0, $this->delimiter, $this->enclosure, $this->escape)) !== false) {
-            $row = array_combine($this->headers, $line);
-
-            if($this->primaryKey && !isset($row[$this->primaryKey])) {
-                throw new \RuntimeException("Primary key '{$this->primaryKey}' not found in CSV row");
-            }
-
-            $this->rows[] = $this->castRow($row);
-        }
-
-        fclose($handle);
-    }
+    protected array $rows = [];
 
     /**
-     * Casts row values according to the defined casting rules in $cast property.
+     * Array of column headers from the CSV file.
+     * Each element represents a column name in the order they appear.
      *
-     * @param array<string,mixed> $row Associative array representing a CSV row
-     * @return array<string,mixed> The row with values cast to their specified types
+     * @var array<int,string>
      */
-    protected function castRow(array $row): array
-    {
-        foreach ($this->cast as $key => $type) {
-            if (isset($row[$key])) {
-                $row[$key] = match ($type) {
-                    'int' => (int) $row[$key],
-                    'float' => (float) $row[$key],
-                    'bool' => (bool) $row[$key],
-                    'string' => (string) $row[$key],
-                    default => $row[$key],
-                };
-            }
-        }
-        return $row;
-    }
+    protected array $headers = [];
+
+    /**
+     * Whether to use strict header checking.
+     *
+     * @var bool
+     */
+    protected bool $strictHeaders = false;
 
     /**
      * Returns the complete set of data rows for querying.
@@ -148,5 +86,95 @@ abstract class Model
     protected function getRows(): array
     {
         return $this->rows;
+    }
+
+    /**
+     * Sets the data rows for the model.
+     *
+     * @param array<int,array<string,mixed>> $rows Array of rows where each row is an associative array
+     * @return static Returns the current instance for method chaining
+     */
+    protected function setRows(array $rows): static
+    {
+        $this->rows = $rows;
+        return $this;
+    }
+
+    /**
+     * Returns the delimiter character used to separate fields in the CSV file.
+     *
+     * @return string The delimiter character.
+     */
+    protected function getDelimiter(): string
+    {
+        return $this->delimiter;
+    }
+
+    /**
+     * Returns the enclosure character used to wrap field values in the CSV file.
+     *
+     * @return string The enclosure character.
+     */
+    protected function getEnclosure(): string
+    {
+        return $this->enclosure;
+    }
+
+    /**
+     * Returns the escape character used in the CSV file.
+     *
+     * @return string The escape character.
+     */
+    protected function getEscape(): string
+    {
+        return $this->escape;
+    }
+
+    protected function resolvePath($path = ''): string
+    {
+        return storage_path($this->path);
+    }
+
+    /**
+     * Checks whether this model operates in stream mode.
+     *
+     * @return bool True if the model is in stream mode, false otherwise
+     */
+    public function isStream(): bool
+    {
+        return $this->stream;
+    }
+
+    /**
+     * Returns the array of headers read from the CSV file.
+     *
+     * @return array<int,string> Array of column headers
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * Sets the headers for the CSV file.
+     * This method is used to define the column names explicitly.
+     *
+     * @param array<int,string> $headers Array of column headers
+     * @return static Returns the current instance for method chaining
+     */
+    public function setHeaders(array $headers): static
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
+    /**
+     * Checks if strict header validation is enabled.
+     *
+     * @return bool
+     */
+    protected function isStrictHeaders(): bool
+    {
+        return $this->strictHeaders;
     }
 }
