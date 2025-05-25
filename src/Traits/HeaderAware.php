@@ -23,7 +23,7 @@ trait HeaderAware
      */
     public function hasHeader(string $header): bool
     {
-        return in_array($header, $this->getHeaders(), $this->isStrictHeaders());;
+        return in_array($header, $this->getHeaders(), $this->isStrictHeaders());
     }
 
     /**

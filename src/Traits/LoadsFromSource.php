@@ -60,7 +60,7 @@ trait LoadsFromSource
         $path = $this->resolvePath();
 
         if (!file_exists($path)) {
-            throw new RuntimeException("File not found at $path");
+            throw new \RuntimeException("File not found at $path");
         }
 
         return fopen($path, 'r');
@@ -73,7 +73,7 @@ trait LoadsFromSource
      */
     protected function openStreamHandle(): mixed
     {
-        throw new LogicException(static::class . ' is in stream mode but did not implement openStreamHandle().');
+        throw new \LogicException(static::class . ' is in stream mode but did not implement openStreamHandle().');
     }
 
     /**
@@ -85,7 +85,7 @@ trait LoadsFromSource
     protected function validateFileHandle($handle): void
     {
         if (!is_resource($handle)) {
-            throw new InvalidArgumentException('File handle is not valid.');
+            throw new \InvalidArgumentException('File handle is not valid.');
         }
     }
 
