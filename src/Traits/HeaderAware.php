@@ -33,7 +33,7 @@ trait HeaderAware
      * @return array<int,string> The loaded headers as an array.
      * @throws \RuntimeException If strict header validation is enabled and the headers are invalid.
      */
-    protected function loadHeadersFromHandle(resource $handle): array
+    protected function loadHeadersFromHandle($handle): array
     {
         if ($this->headers) {
             return $this->getHeaders();

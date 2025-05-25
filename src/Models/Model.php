@@ -6,6 +6,7 @@ use FlatModel\CsvModel\Traits\Castable;
 use FlatModel\CsvModel\Traits\LoadsFromSource;
 use FlatModel\CsvModel\Traits\Queryable;
 use FlatModel\CsvModel\Traits\ResolvesPrimaryKey;
+use FlatModel\CsvModel\Traits\HeaderAware;
 
 abstract class Model
 {

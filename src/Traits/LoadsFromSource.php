@@ -7,8 +7,7 @@ trait LoadsFromSource
     /**
      * The file handle or stream resource.
      */
-    protected resource $handle;
-
+    protected mixed $handle;
     /**
      * Initializes the model by loading data from a CSV file.
      *
@@ -56,7 +55,7 @@ trait LoadsFromSource
      *
      * @return resource
      */
-    protected function openFileHandle(): resource
+    protected function openFileHandle(): mixed
     {
         $path = $this->resolvePath();
 
@@ -72,7 +71,7 @@ trait LoadsFromSource
      *
      * @return resource
      */
-    protected function openStreamHandle(): resource
+    protected function openStreamHandle(): mixed
     {
         throw new LogicException(static::class . ' is in stream mode but did not implement openStreamHandle().');
     }
@@ -146,6 +145,6 @@ trait LoadsFromSource
      * @param resource $handle The file handle to read the CSV headers from.
      * @return array<int,string> The loaded headers as an array.
      */
-    abstract protected function loadHeadersFromHandle(resource $handle): array;
+    abstract protected function loadHeadersFromHandle($handle): array;
 
 }
