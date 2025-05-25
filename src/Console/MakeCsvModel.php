@@ -3,15 +3,23 @@
 namespace FlatModel\CsvModel\Console;
 
 use Illuminate\Console\GeneratorCommand;
-use Symfony\Component\Console\InputOption;
+use Symfony\Component\Console\Input\InputOption;
 
 class MakeCsvModel extends GeneratorCommand
 {
     /**
      * The name of the command used to generate a CSV model.
+     *
+     * @var string
      */
-    protected string $name = 'make:csv-model';
-
+    protected $name = 'make:csv-model';
+    
+    /**
+     * The console command signature.
+     *
+     * @var string
+     */
+    protected $signature = 'make:csv-model {name?} {--path=} {--primary=?}';
     /**
      * The console command description.
      *
@@ -24,7 +32,7 @@ class MakeCsvModel extends GeneratorCommand
      *
      * @var string
      */
-    protected string $type = 'CsvModel';
+    protected $type = 'CsvModel';
 
     /**
      * Get the stub file for the generator.
@@ -42,7 +50,7 @@ class MakeCsvModel extends GeneratorCommand
      * @param  string  $rootNamespace
      * @return string
      */
-    protected function getDefaultNamespace(string $rootNamespace): string
+    protected function getDefaultNamespace($rootNamespace): string
     {
         return $rootNamespace . '\Models';
     }
@@ -52,6 +60,13 @@ class MakeCsvModel extends GeneratorCommand
         return [
             ['path', null, InputOption::VALUE_OPTIONAL, 'The CSV path to set inside the model', null],
             ['primary', null, InputOption::VALUE_OPTIONAL, 'The primary key to set inside the model', null],
+        ];
+    }
+
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'name' => fn () => $this->ask('What should the CSV Model be named?'),
         ];
     }
 
