@@ -25,7 +25,7 @@ Once the model is generated, it can be used similarly to standard models within 
 ```php
 use App\Models\CsvModel
 
-$data = (new CsvModel)
+$model = (new CsvModel)
         ->where('active', true)
         ->pluck('id');
 ```
