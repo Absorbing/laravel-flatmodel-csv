@@ -7,6 +7,7 @@ use FlatModel\CsvModel\Traits\LoadsFromSource;
 use FlatModel\CsvModel\Traits\Queryable;
 use FlatModel\CsvModel\Traits\ResolvesPrimaryKey;
 use FlatModel\CsvModel\Traits\HeaderAware;
+use FlatModel\CsvModel\Traits\Writable;
 
 abstract class Model
 {
@@ -14,7 +15,8 @@ abstract class Model
         ResolvesPrimaryKey,
         LoadsFromSource,
         Castable,
-        HeaderAware;
+        HeaderAware,
+        Writable;
 
     /**
      * The absolute or relative path to the CSV file that this model represents.
@@ -80,6 +82,39 @@ abstract class Model
     protected bool $strictHeaders = false;
 
     /**
+     * Defines type casting rules for CSV columns.
+     * Associates column names with their desired data types for automatic type conversion.
+     *
+     * Supported types:
+     * - 'int': Cast to integer
+     * - 'float': Cast to floating point number
+     * - 'bool': Cast to boolean
+     * - 'string': Cast to string
+     *
+     * Example:
+     * ['age' => 'int', 'price' => 'float', 'active' => 'bool']
+     *
+     * @var array<string,string> Key-value pairs where key is column name and value is target type
+     */
+    protected array $cast = [];
+
+    /**
+     * Indicates whether the model is writable.
+     * If true, the model can be used to write data back to the CSV file.
+     * If false, the model is read-only and cannot modify the underlying CSV data.
+     *
+     * @var bool
+     */
+    protected bool $writable = false;
+
+    /**
+     * Indicates whether the model is append-only
+     *
+     * @var bool
+     */
+    protected bool $appendOnly = false;
+
+    /**
      * Returns the complete set of data rows for querying.
      *
      * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
@@ -98,6 +133,19 @@ abstract class Model
     protected function setRows(array $rows): static
     {
         $this->rows = $rows;
+        return $this;
+    }
+
+    /**
+     * Adds a single row to the model's data.
+     * This method appends the provided row to the existing rows array.
+     *
+     * @param array<string,mixed> $row Associative array representing a single row of data
+     * @return static Returns the current instance for method chaining
+     */
+    protected function setRow(array $row): static
+    {
+        $this->rows[] = $row;
         return $this;
     }
 
@@ -177,5 +225,35 @@ abstract class Model
     protected function isStrictHeaders(): bool
     {
         return $this->strictHeaders;
+    }
+
+    /**
+     * Gets the casted types for the model's columns.
+     *
+     * @return array<string,string> Key-value pairs where key is column name and value is target type
+     */
+    protected function getCast(): array
+    {
+        return $this->cast;
+    }
+
+    /**
+     * Checks if the model is writable
+     *
+     * @return bool
+     */
+    protected function isWritable(): bool
+    {
+        return $this->writable;
+    }
+
+    /**
+     * Checks if the model is append-only
+     *
+     * @return bool
+     */
+    protected function isAppendOnly(): bool
+    {
+        return $this->appendOnly;
     }
 }

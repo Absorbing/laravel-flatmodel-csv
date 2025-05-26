@@ -4,17 +4,6 @@ namespace FlatModel\CsvModel\Traits;
 
 trait HeaderAware
 {
-
-    /**
-     * Checks if strict header checking is enabled.
-     *
-     * @return bool True if strict header checking is enabled, false otherwise
-     */
-    public function isStrictHeaders(): bool
-    {
-        return $this->strictHeaders;
-    }
-
     /**
      * Checks if a specific header exists in the list of headers.
      *
@@ -113,4 +102,11 @@ trait HeaderAware
      * @return array<int,string> Array of column headers
      */
     abstract public function getHeaders(): array;
+
+    /**
+     * Checks if strict header validation is enabled.
+     *
+     * @return bool True if strict header validation is enabled, false otherwise
+     */
+    abstract public function isStrictHeaders(): bool;
 }

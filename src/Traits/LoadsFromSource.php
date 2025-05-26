@@ -147,4 +147,25 @@ trait LoadsFromSource
      */
     abstract protected function loadHeadersFromHandle($handle): array;
 
+    /**
+     * Sets the data rows for the model.
+     *
+     * @param array $rows
+     * @return static
+     */
+    abstract protected function setRows(array $rows): static;
+
+    /**
+     * Checks if the model is in stream mode.
+     *
+     * @return bool True if the model is in stream mode, false otherwise
+     */
+    abstract protected function isStream(): bool;
+
+    /**
+     * Checks if the model is writable.
+     *
+     * @return bool True if the model is writable, false otherwise
+     */
+    abstract protected function isWritable(): bool;
 }

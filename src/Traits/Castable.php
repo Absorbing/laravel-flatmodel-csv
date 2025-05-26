@@ -5,23 +5,6 @@ namespace FlatModel\CsvModel\Traits;
 trait Castable
 {
     /**
-     * Defines type casting rules for CSV columns.
-     * Associates column names with their desired data types for automatic type conversion.
-     *
-     * Supported types:
-     * - 'int': Cast to integer
-     * - 'float': Cast to floating point number
-     * - 'bool': Cast to boolean
-     * - 'string': Cast to string
-     *
-     * Example:
-     * ['age' => 'int', 'price' => 'float', 'active' => 'bool']
-     *
-     * @var array<string,string> Key-value pairs where key is column name and value is target type
-     */
-    protected array $cast = [];
-
-    /**
      * Casts row values according to the defined casting rules in $cast property.
      *
      * @param array<string,mixed> $row Associative array representing a CSV row
@@ -29,7 +12,7 @@ trait Castable
      */
     protected function castRow(array $row): array
     {
-        foreach ($this->cast as $key => $type) {
+        foreach ($this->getCast() as $key => $type) {
             if (isset($row[$key])) {
                 $row[$key] = match ($type) {
                     'int' => (int) $row[$key],
@@ -74,7 +57,7 @@ trait Castable
      */
     protected function hasCast(string $column): bool
     {
-        return isset($this->cast[$column]);
+        return isset($this->getCast()[$column]);
     }
 
     /**
@@ -89,9 +72,16 @@ trait Castable
         $value = $row[$column] ?? null;
 
         if ($this->hasCast($column)) {
-            return $this->castValue($value, $this->cast[$column]);
+            return $this->castValue($value, $this->getCast()[$column]);
         }
 
         return $value;
     }
+
+    /**
+     * Returns the casted types for the model's columns.
+     *
+     * @return array<string,string>
+     */
+    abstract protected function getCast(): array;
 }
