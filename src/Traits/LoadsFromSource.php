@@ -6,6 +6,7 @@ use FlatModel\CsvModel\Exceptions\FileNotFoundException;
 use FlatModel\CsvModel\Exceptions\InvalidHandleException;
 use FlatModel\CsvModel\Exceptions\PrimaryKeyMissingException;
 use FlatModel\CsvModel\Exceptions\StreamOpenException;
+use FlatModel\CsvModel\Exceptions\InvalidRowFormatException;
 
 trait LoadsFromSource
 {
@@ -46,10 +47,27 @@ trait LoadsFromSource
         $this->loadHeadersFromHandle($this->handle);
 
         $rows = [];
+        $headers = $this->getHeaders();
+        $expected = count($headers);
 
         while (($line = fgetcsv($this->handle, 0, $this->getDelimiter(), $this->getEnclosure(),
                 $this->getEscape())) !== false) {
-            $rows[] = $this->castRow(array_combine($this->getHeaders(), $line));
+            if (count($line) !== $expected) {
+                throw new InvalidRowFormatException(sprintf(
+                    'CSV row does not match header count. Expected %d columns, got %d. Row: [%s]',
+                    $expected,
+                    count($line),
+                    implode(', ', $line)
+                ));
+            }
+
+            $row = array_combine($headers, $line);
+
+            if ($row === false) {
+                throw new InvalidRowFormatException('Failed to combine headers and row values.');
+            }
+
+            $rows[] = $this->castRow($row);
         }
 
         $this->setRows($rows);

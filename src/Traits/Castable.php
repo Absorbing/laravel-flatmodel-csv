@@ -2,6 +2,8 @@
 
 namespace FlatModel\CsvModel\Traits;
 
+use FlatModel\CsvModel\Exceptions\CastingException;
+
 trait Castable
 {
     /**
@@ -45,9 +47,25 @@ trait Castable
             'float', 'double' => (float)$value,
             'bool', 'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             'string' => (string)$value,
-            'datetime' => \Carbon\Carbon::parse($value),
+            'datetime' => $this->castToDateTime($value),
             default => $value,
         };
+    }
+
+    /**
+     * Attempts to cast a string value to a Carbon datetime object.
+     *
+     * @param string $value The string value to be parsed into a datetime
+     * @return \Carbon\Carbon A Carbon instance representing the parsed datetime
+     * @throws CastingException If the value cannot be parsed into a valid datetime
+     */
+    protected function castToDateTime(string $value): \Carbon\Carbon
+    {
+        try {
+            return \Carbon\Carbon::parse($value);
+        } catch (\Exception $e) {
+            throw new CastingException("Failed to cast value to datetime: '{$value}'", 0, $e);
+        }
     }
 
     /**

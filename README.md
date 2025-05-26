@@ -90,7 +90,7 @@ FlatModel uses custom exceptions to provide clear and understandable error conte
 - `FileNotFoundException` - When the specified CSV file cannot be found
 - `FileWriteException` - When writing changes to the CSV file fails
 - `HeaderMismatchException` - When headers don't match expected values in strict mode
-- `InvalidHeaderException` - When CSV headers are invalid or malformed
+- `InvalidHandleException` - When attempting to read or write to an invalid file handle
 - `InvalidRowFormatException` - When a row doesn't match the expected format
 - `MissingHeaderException` - When required headers are missing from the CSV
 - `PrimaryKeyMissingException` - When a primary key operation is attempted without a defined key
