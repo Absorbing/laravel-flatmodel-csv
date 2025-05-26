@@ -2,6 +2,7 @@
 
 namespace FlatModel\CsvModel\Models;
 
+use FlatModel\CsvModel\Traits\Backupable;
 use FlatModel\CsvModel\Traits\Castable;
 use FlatModel\CsvModel\Traits\LoadsFromSource;
 use FlatModel\CsvModel\Traits\Queryable;
@@ -16,7 +17,8 @@ abstract class Model
         LoadsFromSource,
         Castable,
         HeaderAware,
-        Writable;
+        Writable,
+        Backupable;
 
     /**
      * The absolute or relative path to the CSV file that this model represents.
@@ -64,7 +66,7 @@ abstract class Model
      *
      * @var array<int,array<string,mixed>> Array of rows where each row is an associative array
      */
-    protected array $rows = [];
+    private array $rows = [];
 
     /**
      * Array of column headers from the CSV file.
