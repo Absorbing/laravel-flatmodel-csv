@@ -1,8 +1,0 @@
-<?php
-
-namespace FlatModel\CsvModel\Traits;
-
-trait Macroable
-{
-
-}

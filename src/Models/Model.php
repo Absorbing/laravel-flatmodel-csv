@@ -115,6 +115,13 @@ abstract class Model
     protected bool $appendOnly = false;
 
     /**
+     * Enables or disables automatic backups on modification of the file
+     *
+     * @var bool
+     */
+    protected bool $enableBackup = false;
+
+    /**
      * Returns the complete set of data rows for querying.
      *
      * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
@@ -179,6 +186,12 @@ abstract class Model
         return $this->escape;
     }
 
+    /**
+     * Resolves a relative or absolute file path.
+     *
+     * @param string $path Optional path to resolve relative to the model's base path
+     * @return string The fully resolved absolute file path
+     */
     protected function resolvePath($path = ''): string
     {
         return storage_path($this->path);
@@ -255,5 +268,15 @@ abstract class Model
     protected function isAppendOnly(): bool
     {
         return $this->appendOnly;
+    }
+
+    /**
+     * Determines if backups are enabled
+     *
+     * @return bool
+     */
+    protected function shouldBackup(): bool
+    {
+        return $this->enableBackup;
     }
 }
