@@ -2,6 +2,9 @@
 
 namespace FlatModel\CsvModel\Traits;
 
+use FlatModel\CsvModel\Exceptions\HeaderMismatchException;
+use FlatModel\CsvModel\Exceptions\MissingHeaderException;
+
 trait HeaderAware
 {
     /**
@@ -20,7 +23,7 @@ trait HeaderAware
      *
      * @param resource $handle The file handle to read the CSV headers from.
      * @return array<int,string> The loaded headers as an array.
-     * @throws \RuntimeException If strict header validation is enabled and the headers are invalid.
+     * @throws MissingHeaderException If strict header validation is enabled and the headers are invalid.
      */
     protected function loadHeadersFromHandle($handle): array
     {
@@ -36,8 +39,8 @@ trait HeaderAware
             $this->getEscape()
         );
 
-        if(!is_array($headers)) {
-            throw new \RuntimeException("Failed to read headers from CSV file.");
+        if (!is_array($headers)) {
+            throw new MissingHeaderException("Failed to read headers from CSV file.");
         }
 
         $this->validateHeaders($headers);
@@ -51,14 +54,14 @@ trait HeaderAware
      * Validates the headers against the defined rules.
      *
      * @param array<int,string> $headers The headers to validate
-     * @throws \RuntimeException If strict header validation is enabled and the headers are invalid.
+     * @throws HeaderMismatchException If strict header validation is enabled and the headers are invalid.
      */
     protected function validateHeaders(array $headers): void
     {
         if ($this->strictHeaders) {
             $missingHeaders = array_diff($this->headers, $headers);
             if (!empty($missingHeaders)) {
-                throw new \RuntimeException(
+                throw new HeaderMismatchException(
                     'Headers do not match expected values. ' .
                     'Expected: [' . implode(', ', $this->headers) . '], ' .
                     'Found: [' . implode(', ', $headers) . '].'

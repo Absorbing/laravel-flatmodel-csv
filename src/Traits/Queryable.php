@@ -46,7 +46,7 @@ trait Queryable
     {
         $filtered = $this->getRows();
 
-        foreach($this->queryConstraints as $constraint) {
+        foreach ($this->queryConstraints as $constraint) {
             $filtered = array_filter($filtered, $constraint);
         }
 
@@ -82,10 +82,10 @@ trait Queryable
      * Retrieves a Collection containing only the values from a single column of the CSV data.
      *
      * @param string $column The name of the column to extract values from
-     * @return \Illuminate\Support\Collection A collection containing only the values from the specified column
-     * @throws \RuntimeException If the specified column does not exist in the CSV file
+     * @return Collection A collection containing only the values from the specified column
+     * @throws ColumnNotFoundException If the specified column does not exist in the CSV file
      */
-    public function pluck(string $column): \Illuminate\Support\Collection
+    public function pluck(string $column): Collection
     {
         return $this->get()->pluck($column);
     }
@@ -95,11 +95,17 @@ trait Queryable
      *
      * @param string $column The name of the column to extract the value from
      * @return mixed The first value from the specified column
-     * @throws \RuntimeException If the specified column does not exist in the CSV file
+     * @throws ColumnNotFoundException If the specified column does not exist in the CSV file
      */
     public function value(string $column): mixed
     {
-        return $this->pluck($column)->first();
+        $values = $this->pluck($column);
+
+        if ($values->isEmpty()) {
+            throw new ColumnNotFoundException("Column '{$column}' does not exist or contains no data.");
+        }
+
+        return $values->first();
     }
 
     /**

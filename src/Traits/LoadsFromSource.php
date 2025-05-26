@@ -2,20 +2,26 @@
 
 namespace FlatModel\CsvModel\Traits;
 
+use FlatModel\CsvModel\Exceptions\FileNotFoundException;
+use FlatModel\CsvModel\Exceptions\InvalidHandleException;
+use FlatModel\CsvModel\Exceptions\PrimaryKeyMissingException;
+use FlatModel\CsvModel\Exceptions\StreamOpenException;
+
 trait LoadsFromSource
 {
     /**
      * The file handle or stream resource.
      */
     protected mixed $handle;
+
     /**
      * Initializes the model by loading data from a CSV file.
      *
      * The first row of the CSV file is expected to contain column headers.
      * Each subsequent row is stored as an associative array where keys are the column names.
      *
-     * @throws \RuntimeException If the file does not exist at the resolved path
-     * @throws \RuntimeException If a primary key is specified but not found in the CSV row
+     * @throws FileNotFoundException If the file does not exist at the resolved path
+     * @throws PrimaryKeyMissingException If a primary key is specified but not found in the CSV row
      */
     public function __construct()
     {
@@ -41,7 +47,8 @@ trait LoadsFromSource
 
         $rows = [];
 
-        while (($line = fgetcsv($this->handle, 0, $this->getDelimiter(), $this->getEnclosure(), $this->getEscape())) !== false) {
+        while (($line = fgetcsv($this->handle, 0, $this->getDelimiter(), $this->getEnclosure(),
+                $this->getEscape())) !== false) {
             $rows[] = $this->castRow(array_combine($this->getHeaders(), $line));
         }
 
@@ -53,14 +60,15 @@ trait LoadsFromSource
     /**
      * Opens a file path.
      *
-     * @return resource
+     * @return mixed
+     * @throws FileNotFoundException
      */
     protected function openFileHandle(): mixed
     {
         $path = $this->resolvePath();
 
         if (!file_exists($path)) {
-            throw new \RuntimeException("File not found at $path");
+            throw new FileNotFoundException("File not found at $path");
         }
 
         return fopen($path, 'r');
@@ -69,11 +77,11 @@ trait LoadsFromSource
     /**
      * Opens a stream resource.
      *
-     * @return resource
+     * @throws StreamOpenException
      */
-    protected function openStreamHandle(): mixed
+    protected function openStreamHandle(): void
     {
-        throw new \LogicException(static::class . ' is in stream mode but did not implement openStreamHandle().');
+        throw new StreamOpenException(static::class . ' is in stream mode but did not implement openStreamHandle().');
     }
 
     /**
@@ -81,11 +89,12 @@ trait LoadsFromSource
      *
      * @param $handle
      * @return void
+     * @throws InvalidHandleException
      */
     protected function validateFileHandle($handle): void
     {
         if (!is_resource($handle)) {
-            throw new \InvalidArgumentException('File handle is not valid.');
+            throw new InvalidHandleException('File handle is not valid.');
         }
     }
 

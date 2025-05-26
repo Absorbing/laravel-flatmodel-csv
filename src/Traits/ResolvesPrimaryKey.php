@@ -2,6 +2,8 @@
 
 namespace FlatModel\CsvModel\Traits;
 
+use FlatModel\CsvModel\Exceptions\PrimaryKeyMissingException;
+
 trait ResolvesPrimaryKey
 {
     /**
@@ -46,11 +48,12 @@ trait ResolvesPrimaryKey
      *
      * @param string $value The value to search for in the rows using the primary key.
      * @return array|null Returns the matching row as an associative array if found, or null if no match is found.
+     * @throws PrimaryKeyMissingException Throws if the primary key is not set.
      */
     public function find(mixed $value): ?array
     {
         if (!$this->hasPrimaryKey()) {
-            throw new \LogicException("Cannot call find() without defining a primary key.");
+            throw new PrimaryKeyMissingException("Cannot call find() without defining a primary key.");
         }
 
         foreach ($this->getRows() as $row) {
@@ -65,12 +68,12 @@ trait ResolvesPrimaryKey
     /**
      * Validates the presence of the primary key in the CSV headers.
      *
-     * @throws \RuntimeException If the primary key is not found in the CSV headers
+     * @throws PrimaryKeyMissingException If the primary key is not found in the CSV headers
      */
     protected function validatePrimaryKeyPresence(): void
     {
         if ($this->hasPrimaryKey() && !isset($this->headers[$this->primaryKey])) {
-            throw new \RuntimeException("Primary key '{$this->primaryKey}' not found in CSV headers");
+            throw new PrimaryKeyMissingException("Primary key '{$this->primaryKey}' not found in CSV headers");
         }
     }
 

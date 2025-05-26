@@ -15,14 +15,15 @@ trait Castable
         foreach ($this->getCast() as $key => $type) {
             if (isset($row[$key])) {
                 $row[$key] = match ($type) {
-                    'int' => (int) $row[$key],
-                    'float' => (float) $row[$key],
-                    'bool' => (bool) $row[$key],
-                    'string' => (string) $row[$key],
+                    'int' => (int)$row[$key],
+                    'float' => (float)$row[$key],
+                    'bool' => (bool)$row[$key],
+                    'string' => (string)$row[$key],
                     default => $row[$key],
                 };
             }
         }
+
         return $row;
     }
 
@@ -40,10 +41,10 @@ trait Castable
         }
 
         return match ($type) {
-            'int', 'integer' => (int) $value,
-            'float', 'double' => (float) $value,
+            'int', 'integer' => (int)$value,
+            'float', 'double' => (float)$value,
             'bool', 'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
-            'string' => (string) $value,
+            'string' => (string)$value,
             'datetime' => \Carbon\Carbon::parse($value),
             default => $value,
         };

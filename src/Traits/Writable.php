@@ -2,7 +2,9 @@
 
 namespace FlatModel\CsvModel\Traits;
 
-use RuntimeException;
+use FlatModel\CsvModel\Exceptions\FileWriteException;
+use FlatModel\CsvModel\Exceptions\StreamWriteException;
+use FlatModel\CsvModel\Exceptions\WriteNotAllowedException;
 
 trait Writable
 {
@@ -10,15 +12,17 @@ trait Writable
      * Check if the model is writable
      *
      * @return void
+     * @throws WriteNotAllowedException
+     * @throws StreamWriteException
      */
     protected function assertWritable(): void
     {
-        if (! $this->isWritable()) {
-            throw new RuntimeException('This model is not writable.');
+        if (!$this->isWritable()) {
+            throw new WriteNotAllowedException('This model is not writable.');
         }
 
-        if($this->isStream()) {
-            throw new RuntimeException(static::class . ' is a stream model, it cannot be written to.');
+        if ($this->isStream()) {
+            throw new StreamWriteException(static::class . ' is a stream model, it cannot be written to.');
         }
     }
 
@@ -84,7 +88,7 @@ trait Writable
 
         $filteredRows = array_values(
             array_filter($rows, function ($row) use ($filter) {
-                return ! $filter($row);
+                return !$filter($row);
             })
         );
 
@@ -102,14 +106,14 @@ trait Writable
      * such as a file or database, depending on the implementation.
      *
      * @return static Returns the current instance for method chaining
-     * @throws RuntimeException If the model is not writable or is a stream model
+     * @throws StreamWriteException If the model is not writable or is a stream model
      */
     public function save(): static
     {
         $this->assertWritable();
 
         if ($this->isStream()) {
-            throw new RuntimeException(static::class . ' is a stream model, it cannot be saved.');
+            throw new StreamWriteException(static::class . ' is a stream model, it cannot be saved.');
         }
 
         $this->flush();
@@ -124,14 +128,15 @@ trait Writable
      * such as a file, ensuring that the data is persisted.
      *
      * @return static Returns the current instance for method chaining
-     * @throws RuntimeException If the model is not writable or is a stream model
+     * @throws StreamWriteException If the model is a stream model
+     * @throws FileWriteException If the model isn't writeable
      */
     public function flush(): static
     {
         $this->assertWritable();
 
         if ($this->isStream()) {
-            throw new RuntimeException(static::class . ' is a stream model, it cannot be flushed.');
+            throw new StreamWriteException(static::class . ' is a stream model, it cannot be flushed.');
         }
 
         $rows = $this->getRows();
@@ -142,7 +147,7 @@ trait Writable
 
         $handle = fopen($this->resolvePath(), 'w');
         if ($handle === false) {
-            throw new RuntimeException('Failed to open file for writing: ' . $this->resolvePath());
+            throw new FileWriteException('Failed to open file for writing: ' . $this->resolvePath());
         }
 
         $headers = $this->getHeaders();
