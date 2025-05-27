@@ -42,7 +42,7 @@ For interacting and querying data from the model, the following are available;
 - `select()`
 - `value()`
 
-The models also have a series of configurable parameters that will enable or disable functionality.
+The models also have a series of configurable properties that will enable or disable functionality.
 
 | Property         | Type    | Description                                                                                                                                                                    | Default |
 |------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
