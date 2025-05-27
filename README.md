@@ -68,10 +68,6 @@ The model has a series of configurable properties that will enable or disable fu
 Writable models can be modified and saved back to the file using `flush()` or `save()` if `$autoFlush` is disabled by
 using `false`.
 
-> [!IMPORTANT]
-> Models in stream mode cannot be written back to the file and are read-only. If an attempt is made to write to a model
-> implementing stream mode, a `StreamWriteException` will be thrown.
-
 ```php
 $model = new CsvModel;
 
@@ -110,6 +106,10 @@ $model->update(['id' => 5], ['name' => 'Alexa']);
 $model->upsert(['id' => 10], ['id' => 10, 'name' => 'New User']);
 $model->delete(['id' => 2]);
 ```
+
+> [!WARNING]
+> Models in stream mode cannot be written back to the file and are read-only. If an attempt is made to write to a model
+> implementing stream mode, a `StreamWriteException` will be thrown.
 
 > [!WARNING]
 > If the model is in append-only mode, updates, upserts and deletes will throw a `WriteNotAllowedException` exception.
