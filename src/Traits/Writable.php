@@ -177,10 +177,16 @@ trait Writable
     }
 
     /**
-     * Delete rows from the model based on a filter.
+     * Deletes all rows that match the given filter.
      *
-     * @param callable $filter A function that takes a row and returns true if it should be deleted
-     * @return $this
+     * If auto-flush is enabled, changes are saved immediately after deletion.
+     *
+     * @param callable(array<string, mixed>): bool $filter A function that returns true for rows to delete
+     * @return static
+     *
+     * @throws WriteNotAllowedException If the model is not writable
+     * @throws AppendOnlyViolationException If the model is append-only
+     * @throws StreamWriteException If the model is in stream mode
      */
     public function delete(callable $filter): static
     {
