@@ -42,7 +42,7 @@ For interacting and querying data from the model, the following are available;
 - `select()`
 - `value()`
 
-The models also have a series of configurable properties that will enable or disable functionality.
+The model has a series of configurable properties that will enable or disable functionality.
 
 | Property         | Type    | Description                                                                                                                                                                    | Default |
 |------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
@@ -53,7 +53,7 @@ The models also have a series of configurable properties that will enable or dis
 | `$stream`        | boolean | Indicates whether the model operates in stream mode                                                                                                                            | `false` |
 | `$headers`       | array   | Array of column headers from the CSV file, if not provided will try to autodetect from file                                                                                    | `[]`    |
 | `$strictHeaders` | boolean | Enables or disables strict header checking                                                                                                                                     | `false` |
-| `$cast`          | array   | Defines type casting rules for columns                                                                                                                                         | `[]`    |
+| `$cast`          | array   | Defines type casting rules for columns. Valid cast types are `int`, `float`, `bool` and `string`.                                                                              | `[]`    |
 | `$writable`      | boolean | Indicates whether the model is writable, if true the model can be used to write data back to the file. If false, the model is read-only                                        | `false` |
 | `$appendOnly`    | boolean | Indicates whether the model is append-only. If true the model will only have data added to the end of the file, updates cannot be written to models configured for append-only | `false` |
 | `$enableBackup`  | boolean | Enables or disables automatic backups on modification of the file                                                                                                              | `false` |
