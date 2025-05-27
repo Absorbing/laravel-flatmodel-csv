@@ -68,8 +68,9 @@ The model has a series of configurable properties that will enable or disable fu
 Writable models can be modified and saved back to the file using `flush()` or `save()` if `$autoFlush` is disabled by
 using `false`.
 
-> [!WARNING]
-> Models in stream mode cannot be written back to the file and are read-only.
+> [!IMPORTANT]
+> Models in stream mode cannot be written back to the file and are read-only. If an attempt is made to write to a model
+> implementing stream mode, a `StreamWriteException` will be thrown.
 
 ```php
 $model = new CsvModel;
@@ -111,7 +112,7 @@ $model->delete(['id' => 2]);
 ```
 
 > [!WARNING]
-> If the model is in append-only mode, updates, upserts and deletes will throw an exception.
+> If the model is in append-only mode, updates, upserts and deletes will throw a `WriteNotAllowedException` exception.
 
 ## Exception Handling
 
@@ -132,6 +133,7 @@ of `FlatModelException`.
 | `MissingHeaderException`       | When required headers are missing from the CSV                   |
 | `PrimaryKeyMissingException`   | When a primary key operation is attempted without a defined key  |
 | `StreamOpenException`          | When opening the CSV file in stream mode fails                   |
+| `StreamWriteException`         | When attempting to write to a model in stream mode               |
 | `WriteNotAllowedException`     | When attempting to write to a read-only model                    |
 
 ## Testing
