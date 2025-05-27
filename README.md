@@ -83,19 +83,21 @@ $model->delete(fn($row) => $row['id'] === 2);
 
 FlatModel uses custom exceptions to provide clear and understandable error context
 
-- `AppendOnlyViolationException` - When updating or deleting a model flagged as append-only
-- `BackupFailedException` - When a backup fails prior to committing any changes to the file
-- `CastingException` - When a type casting operation fails for a column value
-- `ColumnNotFoundException` - When attempting to access a column that doesn't exist in the CSV
-- `FileNotFoundException` - When the specified CSV file cannot be found
-- `FileWriteException` - When writing changes to the CSV file fails
-- `HeaderMismatchException` - When headers don't match expected values in strict mode
-- `InvalidHandleException` - When attempting to read or write to an invalid file handle
-- `InvalidRowFormatException` - When a row doesn't match the expected format
-- `MissingHeaderException` - When required headers are missing from the CSV
-- `PrimaryKeyMissingException` - When a primary key operation is attempted without a defined key
-- `StreamOpenException` - When opening the CSV file in stream mode fails
-- `WriteNotAllowedException` - When attempting to write to a read-only model
+| Exception                      | Description                                                      |
+|--------------------------------|------------------------------------------------------------------|
+| `AppendOnlyViolationException` | When updating or deleting a model flagged as append-only         |
+| `BackupFailedException`        | When a backup fails prior to committing any changes to the file  |
+| `CastingException`             | When a type casting operation fails for a column value           |
+| `ColumnNotFoundException`      | When attempting to access a column that doesn't exist in the CSV |
+| `FileNotFoundException`        | When the specified CSV file cannot be found                      |
+| `FileWriteException`           | When writing changes to the CSV file fails                       |
+| `HeaderMismatchException`      | When headers don't match expected values in strict mode          |
+| `InvalidHandleException`       | When attempting to read or write to an invalid file handle       |
+| `InvalidRowFormatException`    | When a row doesn't match the expected format                     |
+| `MissingHeaderException`       | When required headers are missing from the CSV                   |
+| `PrimaryKeyMissingException`   | When a primary key operation is attempted without a defined key  |
+| `StreamOpenException`          | When opening the CSV file in stream mode fails                   |
+| `WriteNotAllowedException`     | When attempting to write to a read-only model                    |
 
 ## Testing
 
@@ -104,6 +106,8 @@ Run PHPUnit from the root of your Laravel project or your package repo:
 ```bash
 php artisan test
 ```
+
+Tests can also be run using `orchestra\testbench`
 
 ## License
 
