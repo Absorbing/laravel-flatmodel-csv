@@ -57,31 +57,63 @@ The models also have a series of configurable parameters that will enable or dis
 | `$writable`      | boolean | Indicates whether the model is writable, if true the model can be used to write data back to the file. If false, the model is read-only                                        | `false` |
 | `$appendOnly`    | boolean | Indicates whether the model is append-only. If true the model will only have data added to the end of the file, updates cannot be written to models configured for append-only | `false` |
 | `$enableBackup`  | boolean | Enables or disables automatic backups on modification of the file                                                                                                              | `false` |
+| `$autoFlush`     | boolean | Indicates whether the model should flush the data to the CSV file on every modification                                                                                        | `false` |
 
-## Writing & Flushing Data
+> [!IMPORTANT]
+> If `$autoFlush` is set to `false` (as it is by default), `flush()` should be manually called to persist the data to
+> the file.
 
-Writable models can be modified and saved back to the file using `flush()` or `save()`:
+## Writing, Mutating & Flushing Data
+
+Writable models can be modified and saved back to the file using `flush()` or `save()` if `$autoFlush` is disabled by
+using `false`.
 
 ```php
 $model = new CsvModel;
 
-$model->add(['id' => 5, 'name' => 'Alex']);
+$model->insert(['id' => 5, 'name' => 'Alex']);
 $model->flush(); // Writes changes to file
 ```
 
-Updates and deletes are also possible using similarly named methods.
+Updates and deletes are also possible using similarly named methods using functional filtering.
 
 ```php
-$model->update(fn($row) => $row['id'] === 5, fn($row) => [...$row, 'name' => 'Alexa']);
+$model = new CsvModel;
+
+// Update a matching row
+$model->update(
+    fn($row) => $row['id'] === 5,
+    fn($row) => [...$row, 'name' => 'Alexa']
+);
+
+// Upsert: update if found, insert if not
+$model->upsert(
+    fn($row) => $row['id'] === 10,
+    fn($row) => ['id' => 10, 'name' => 'New User']
+);
+
+// Delete matching rows
 $model->delete(fn($row) => $row['id'] === 2);
+
+// Save changes to disk
+$model->flush();
+```
+
+Models can also be updated using more familiar array-based parameters.
+
+```php
+$model->updateWhere(['id' => 5], ['name' => 'Alexa']);
+$model->upsertWhere(['id' => 10], ['id' => 10, 'name' => 'New User']);
+$model->deleteWhere(['id' => 2]);
 ```
 
 > [!WARNING]
-> If the model is in append-only mode, updates and deletes will throw an exception.
+> If the model is in append-only mode, updates, upserts and deletes will throw an exception.
 
 ## Exception Handling
 
-FlatModel uses custom exceptions to provide clear and understandable error context
+FlatModel uses custom exceptions to provide clear and understandable error context all extending a common base exception
+of `FlatModelException`.
 
 | Exception                      | Description                                                      |
 |--------------------------------|------------------------------------------------------------------|
@@ -106,8 +138,6 @@ Run PHPUnit from the root of your Laravel project or your package repo:
 ```bash
 php artisan test
 ```
-
-Tests can also be run using `orchestra\testbench`
 
 ## License
 

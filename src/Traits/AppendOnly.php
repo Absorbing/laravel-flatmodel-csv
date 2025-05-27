@@ -7,9 +7,12 @@ use FlatModel\CsvModel\Exceptions\AppendOnlyViolationException;
 trait AppendOnly
 {
     /**
-     * Ensure the model is not being mutated in a restricted way.
+     * Ensures that the model is not append-only or throws an exception if it is.
      *
-     * @throws AppendOnlyViolationException
+     * This is used to prevent modifications to models configured as append-only.
+     *
+     * @return void
+     * @throws AppendOnlyViolationException If the model is append-only
      */
     protected function assertAppendable(): void
     {

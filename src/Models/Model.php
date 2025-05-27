@@ -124,6 +124,13 @@ abstract class Model
     protected bool $enableBackup = false;
 
     /**
+     * Indicates whether the model should flush the data to the CSV file on every modification.
+     *
+     * @var bool
+     */
+    protected bool $autoFlush = false;
+
+    /**
      * Returns the complete set of data rows for querying.
      *
      * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
@@ -200,7 +207,9 @@ abstract class Model
     }
 
     /**
-     * Checks whether this model operates in stream mode.
+     * Determines whether the model operates in stream mode.
+     *
+     * Stream mode implies that the model cannot be flushed or written directly.
      *
      * @return bool True if the model is in stream mode, false otherwise
      */
@@ -280,5 +289,15 @@ abstract class Model
     protected function shouldBackup(): bool
     {
         return $this->enableBackup;
+    }
+
+    /**
+     * Determines if the auto-flush mode is enabled
+     *
+     * @return bool
+     */
+    protected function autoFlush(): bool
+    {
+        return $this->autoFlush;
     }
 }
