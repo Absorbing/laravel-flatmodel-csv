@@ -99,12 +99,12 @@ $model->delete(fn($row) => $row['id'] === 2);
 $model->flush();
 ```
 
-Models can also be updated using more familiar array-based parameters.
+Models can also be updated using more familiar array-based syntax.
 
 ```php
-$model->updateWhere(['id' => 5], ['name' => 'Alexa']);
-$model->upsertWhere(['id' => 10], ['id' => 10, 'name' => 'New User']);
-$model->deleteWhere(['id' => 2]);
+$model->update(['id' => 5], ['name' => 'Alexa']);
+$model->upsert(['id' => 10], ['id' => 10, 'name' => 'New User']);
+$model->delete(['id' => 2]);
 ```
 
 > [!WARNING]

@@ -55,32 +55,33 @@ trait Writable
     }
 
     /**
-     * Updates all rows that match the given filter by applying a mutator callback.
+     * Updates rows using either callable or array-based syntax.
      *
-     * This method is flexible and allows complex logic via callables.
-     * If auto-flush is enabled, changes are saved immediately.
-     *
-     * @param callable(array<string, mixed>): bool $filter A function that returns true for rows to be updated
-     * @param callable(array<string, mixed>): array $mutator A function that returns the updated row
+     * @param callable|array $filterOrConditions Callable filter or array of key-value match conditions
+     * @param callable|array $mutatorOrUpdates Callable mutator or array of updates to merge
      * @return static
-     *
-     * @throws WriteNotAllowedException If the model is not writable
-     * @throws AppendOnlyViolationException If the model is append-only
-     * @throws StreamWriteException If the model is in stream mode
      */
-    public function update(callable $filter, callable $mutator): static
+    public function update(callable|array $filterOrConditions, callable|array $mutatorOrUpdates): static
     {
         $this->assertWritable();
         $this->assertAppendable();
 
+
         $rows = $this->getRows();
         $updated = false;
 
+        // Normalize inputs
+        $filter = is_callable($filterOrConditions)
+            ? $filterOrConditions
+            : fn($row) => $this->matchesConditions($row, $filterOrConditions);
+
+        $mutator = is_callable($mutatorOrUpdates)
+            ? $mutatorOrUpdates
+            : fn($row) => [...$row, ...$mutatorOrUpdates];
+
         foreach ($rows as $index => $row) {
             if ($filter($row)) {
-                $row = $this->castRow($mutator($row));
-
-                $rows[$index] = $row;
+                $rows[$index] = $this->castRow($mutator($row));
                 $updated = true;
             }
         }
@@ -97,44 +98,33 @@ trait Writable
     }
 
     /**
-     * Updates all rows that match the given conditions with the provided key-value updates.
+     * Updates the first matching row or inserts a new row if no match is found.
      *
-     * This is the array-based equivalent of update(), allowing you to specify conditions and updates
-     * as associative arrays. Only exact matches on the given conditions will be modified.
+     * Accepts either callable or array-based syntax for conditions and data.
      *
-     * @param array $conditions Key-value pairs used to locate existing rows (e.g., ['id' => 5])
-     * @param array $updates Key-value pairs to merge into the matched rows (e.g., ['name' => 'Updated'])
-     * @return static
-     */
-    public function updateWhere(array $conditions, array $updates): static
-    {
-        return $this->update(
-            fn($row) => $this->matchesConditions($row, $conditions),
-            fn($row) => [...$row, ...$updates]
-        );
-    }
-
-    /**
-     * Updates the first row that matches the filter or inserts a new row if none match.
-     *
-     * The mutator will receive either the matched row or an empty array (if inserting).
-     * If auto-flush is enabled, changes are saved immediately.
-     *
-     * @param callable(array<string, mixed>): bool $filter A function that returns true for the row to update
-     * @param callable(array<string, mixed>): array $mutator A function that builds the row to insert or update
+     * @param callable|array $filterOrConditions Callable filter or array of conditions
+     * @param callable|array $mutatorOrData Callable mutator or data to insert/update
      * @return static
      *
-     * @throws WriteNotAllowedException If the model is not writable
-     * @throws AppendOnlyViolationException If the model is append-only
-     * @throws StreamWriteException If the model is in stream mode
+     * @throws WriteNotAllowedException
+     * @throws AppendOnlyViolationException
+     * @throws StreamWriteException
      */
-    public function upsert(callable $filter, callable $mutator): static
+    public function upsert(callable|array $filterOrConditions, callable|array $mutatorOrData): static
     {
         $this->assertWritable();
         $this->assertAppendable();
 
         $rows = $this->getRows();
         $updated = false;
+
+        $filter = is_callable($filterOrConditions)
+            ? $filterOrConditions
+            : fn($row) => $this->matchesConditions($row, $filterOrConditions);
+
+        $mutator = is_callable($mutatorOrData)
+            ? $mutatorOrData
+            : fn($row) => empty($row) ? $mutatorOrData : [...$row, ...$mutatorOrData];
 
         foreach ($rows as $index => $row) {
             if ($filter($row)) {
@@ -145,8 +135,7 @@ trait Writable
         }
 
         if (!$updated) {
-            $newRow = $this->castRow($mutator([]));
-            $rows[] = $newRow;
+            $rows[] = $this->castRow($mutator([]));
         }
 
         $this->setRows($rows);
@@ -158,48 +147,29 @@ trait Writable
         return $this;
     }
 
-    /**
-     * Updates an existing row matching the given conditions, or inserts a new row if none match.
-     *
-     * This is the array-based equivalent of upsert() and mimics Eloquent-style conditional behavior.
-     * If no existing row matches the conditions, a new row will be created using the insertOrUpdate array.
-     *
-     * @param array $conditions Key-value pairs used to locate an existing row (e.g., ['id' => 5])
-     * @param array $insertOrUpdate Key-value pairs used to either update an existing row or insert a new one
-     * @return static
-     */
-    public function upsertWhere(array $conditions, array $insertOrUpdate): static
-    {
-        return $this->upsert(
-            fn($row) => $this->matchesConditions($row, $conditions),
-            fn($row) => empty($row) ? $insertOrUpdate : [...$row, ...$insertOrUpdate]
-        );
-    }
 
     /**
-     * Deletes all rows that match the given filter.
+     * Deletes rows using either a callable or array-based conditions.
      *
-     * If auto-flush is enabled, changes are saved immediately after deletion.
-     *
-     * @param callable(array<string, mixed>): bool $filter A function that returns true for rows to delete
+     * @param callable|array $filter Callable filter or array of conditions
      * @return static
      *
-     * @throws WriteNotAllowedException If the model is not writable
-     * @throws AppendOnlyViolationException If the model is append-only
-     * @throws StreamWriteException If the model is in stream mode
+     * @throws WriteNotAllowedException
+     * @throws AppendOnlyViolationException
+     * @throws StreamWriteException
      */
-    public function delete(callable $filter): static
+    public function delete(callable|array $filter): static
     {
         $this->assertWritable();
         $this->assertAppendable();
 
         $rows = $this->getRows();
 
-        $filteredRows = array_values(
-            array_filter($rows, function ($row) use ($filter) {
-                return !$filter($row);
-            })
-        );
+        $filterFn = is_callable($filter)
+            ? $filter
+            : fn($row) => $this->matchesConditions($row, $filter);
+
+        $filteredRows = array_values(array_filter($rows, fn($row) => !$filterFn($row)));
 
         if (count($filteredRows) !== count($rows)) {
             $this->setRows($filteredRows);
@@ -210,22 +180,6 @@ trait Writable
         }
 
         return $this;
-    }
-
-    /**
-     * Deletes all rows that match the given conditions.
-     *
-     * This is the array-based equivalent of delete(), using simple key-value pairs to match rows.
-     * Any rows with exact matches to all provided conditions will be removed.
-     *
-     * @param array $conditions Key-value pairs used to locate rows for deletion (e.g., ['status' => 'inactive'])
-     * @return static
-     */
-    public function deleteWhere(array $conditions): static
-    {
-        return $this->delete(
-            fn($row) => $this->matchesConditions($row, $conditions)
-        );
     }
 
     /**
