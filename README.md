@@ -68,6 +68,9 @@ The model has a series of configurable properties that will enable or disable fu
 Writable models can be modified and saved back to the file using `flush()` or `save()` if `$autoFlush` is disabled by
 using `false`.
 
+> [!WARNING]
+> Models in stream mode cannot be written back to the file and are read-only.
+
 ```php
 $model = new CsvModel;
 
