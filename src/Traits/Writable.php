@@ -239,9 +239,7 @@ trait Writable
      */
     public function save(): static
     {
-        $this->flush();
-
-        return $this;
+        return $this->flush();
     }
 
     /**
