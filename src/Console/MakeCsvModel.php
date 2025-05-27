@@ -13,13 +13,13 @@ class MakeCsvModel extends GeneratorCommand
      * @var string
      */
     protected $name = 'make:csv-model';
-    
+
     /**
      * The console command signature.
      *
      * @var string
      */
-    protected $signature = 'make:csv-model {name?} {--path=} {--primary=?}';
+    protected $signature = 'make:csv-model {name?} {--path=} {--primary=?} {--noprimary}';
     /**
      * The console command description.
      *
@@ -47,7 +47,7 @@ class MakeCsvModel extends GeneratorCommand
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace): string
@@ -66,7 +66,7 @@ class MakeCsvModel extends GeneratorCommand
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            'name' => fn () => $this->ask('What should the CSV Model be named?'),
+            'name' => fn() => $this->ask('What should the CSV Model be named?'),
         ];
     }
 
@@ -74,18 +74,22 @@ class MakeCsvModel extends GeneratorCommand
     {
         $class = parent::buildClass($name);
 
+        if ($this->option('noprimary')) {
+            $class = preg_replace("/^\s*public\s+\$primaryKey\s*=\s*'.*';\s*\n?/m", '', $class);
+        }
+
         $csvPath = $this->option('path') ?? 'csv/' . class_basename($name) . '.csv';
         $primaryKey = $this->option('primary') ?? null;
 
         return str_replace([
-                'DummyCsvPath',
-                'DummyPrimaryKey',
-            ],
+            'DummyCsvPath',
+            'DummyPrimaryKey',
+        ],
             [
                 addslashes($csvPath),
                 addslashes($primaryKey),
             ],
-        $class
+            $class
         );
     }
 }

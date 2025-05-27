@@ -20,6 +20,15 @@ A new CSV model can be made by running the artisan command which will prompt for
 php artisan make:csv-model CsvModel
 ```
 
+If instead you want to skip the prompts, the arguments can be provided instead;
+
+```bash
+php artisan make:csv-model CsvModel --path=csv\data.csv --primary=id
+```
+
+Providing a primary key is optional and can be skipped with the `--noprimary` flag or by leaving the prompt empty when
+prompted for a primary key.
+
 Once the model is generated, it can be used similarly to standard models within Laravel
 
 ```php
