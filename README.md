@@ -1,4 +1,6 @@
-# FlatModel - CSV
+<p align="center">
+  <img src="/assets/FlatModel%20CSV.png">
+</p>
 
 Laravel FlatModel - CSV is an Eloquent-inspired data modeling system for Laravel that works with CSV files.
 
@@ -81,7 +83,7 @@ using `false`.
 $model = new CsvModel;
 
 $model->insert(['id' => 5, 'name' => 'Alex']);
-$model->flush(); // Writes changes to file
+$model->flush(); // Writes changes to the file
 ```
 
 Updates and deletes are also possible using similarly named methods using functional filtering.
@@ -125,8 +127,8 @@ $model->delete(['id' => 2]);
 
 ## Exception Handling
 
-FlatModel uses custom exceptions to provide clear and understandable error context all extending a common base exception
-of `FlatModelException`.
+FlatModel uses custom exceptions to provide clear and understandable error context all extending a common base of
+`FlatModelException`.
 
 | Exception                      | Description                                                      |
 |--------------------------------|------------------------------------------------------------------|
