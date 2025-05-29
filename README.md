@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Absorbing/laravel-flatmodel-csv/refs/heads/master/assets/FlatModel%20CSV.png?token=GHSAT0AAAAAADCS7KNOVQFM2L45OFRFAQ7S2BXSEPQ">
+  <img src="/assets/FlatModel%20CSV.png">
 </p>
 
 Laravel FlatModel - CSV is an Eloquent-inspired data modeling system for Laravel that works with CSV files.
