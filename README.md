@@ -2,7 +2,7 @@
   <img src="/assets/FlatModel%20CSV.png">
 </p>
 
-Laravel FlatModel - CSV is an Eloquent-inspired data modeling system for Laravel that works with CSV files.
+FlatModel CSV is an Eloquent-inspired data modeling system for Laravel that works with CSV files.
 
 It provides an expressive, familiar API for reading and writing flat data sources without relying on a database.
 
