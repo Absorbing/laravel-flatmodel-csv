@@ -2,23 +2,11 @@
 
 namespace FlatModel\CsvModel\Models;
 
-use FlatModel\CsvModel\Traits\Backupable;
-use FlatModel\CsvModel\Traits\Castable;
-use FlatModel\CsvModel\Traits\LoadsFromSource;
-use FlatModel\CsvModel\Traits\Queryable;
-use FlatModel\CsvModel\Traits\ResolvesPrimaryKey;
-use FlatModel\CsvModel\Traits\HeaderAware;
-use FlatModel\CsvModel\Traits\Writable;
+use FlatModel\CsvModel\Traits\HasCoreFeatures;
 
 abstract class Model
 {
-    use Queryable,
-        ResolvesPrimaryKey,
-        LoadsFromSource,
-        Castable,
-        HeaderAware,
-        Writable,
-        Backupable;
+    use HasCoreFeatures;
 
     /**
      * The absolute or relative path to the CSV file that this model represents.
@@ -75,6 +63,19 @@ abstract class Model
      * @var array<int,string>
      */
     protected array $headers = [];
+
+    /**
+     * Indicates whether the CSV file has a header row.
+     *
+     * - true: First row contains column names (default)
+     * - false: No header row, all rows are data
+     *
+     * When false, if $headers is provided, those names will be used for columns.
+     * Otherwise, numeric indices (0, 1, 2...) will be used as column keys.
+     *
+     * @var bool
+     */
+    protected bool $hasHeaders = true;
 
     /**
      * Whether to use strict header checking.
@@ -242,6 +243,16 @@ abstract class Model
     }
 
     /**
+     * Checks if the CSV file has a header row.
+     *
+     * @return bool
+     */
+    protected function hasHeaders(): bool
+    {
+        return $this->hasHeaders;
+    }
+
+    /**
      * Checks if strict header validation is enabled.
      *
      * @return bool
@@ -299,5 +310,18 @@ abstract class Model
     protected function autoFlush(): bool
     {
         return $this->autoFlush;
+    }
+
+    /**
+     * Asserts that the model is mutable (not append-only).
+     *
+     * By default, models are mutable. The AppendOnly trait overrides this
+     * to enforce append-only restrictions when used.
+     *
+     * @return void
+     */
+    protected function assertMutable(): void
+    {
+        // Default: no restriction, model is fully mutable
     }
 }

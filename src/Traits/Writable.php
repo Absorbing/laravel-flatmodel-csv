@@ -7,6 +7,29 @@ use FlatModel\CsvModel\Exceptions\FileWriteException;
 use FlatModel\CsvModel\Exceptions\StreamWriteException;
 use FlatModel\CsvModel\Exceptions\WriteNotAllowedException;
 
+/**
+ * Provides write capabilities for CSV models.
+ *
+ * This trait is opt-in and should be used by models that need to
+ * modify their underlying CSV data.
+ *
+ * Usage:
+ * ```php
+ * class EditableModel extends Model
+ * {
+ *     use Writable;
+ *
+ *     protected bool $writable = true;
+ * }
+ * ```
+ *
+ * Available methods:
+ * - insert(): Add new rows
+ * - update(): Modify existing rows
+ * - upsert(): Update or insert
+ * - delete(): Remove rows
+ * - flush()/save(): Persist changes to disk
+ */
 trait Writable
 {
     /**
@@ -64,7 +87,7 @@ trait Writable
     public function update(callable|array $filterOrConditions, callable|array $mutatorOrUpdates): static
     {
         $this->assertWritable();
-        $this->assertAppendable();
+        $this->assertMutable();
 
 
         $rows = $this->getRows();
@@ -113,7 +136,7 @@ trait Writable
     public function upsert(callable|array $filterOrConditions, callable|array $mutatorOrData): static
     {
         $this->assertWritable();
-        $this->assertAppendable();
+        $this->assertMutable();
 
         $rows = $this->getRows();
         $updated = false;
@@ -161,7 +184,7 @@ trait Writable
     public function delete(callable|array $filter): static
     {
         $this->assertWritable();
-        $this->assertAppendable();
+        $this->assertMutable();
 
         $rows = $this->getRows();
 
@@ -304,11 +327,11 @@ trait Writable
     abstract protected function isStream(): bool;
 
     /**
-     * Resolves the path where the model's data is stored.
+     * Asserts that the model is mutable (not append-only).
      *
-     * @return string The resolved file path
+     * @return void
      */
-    abstract protected function assertAppendable(): void;
+    abstract protected function assertMutable(): void;
 
     /**
      * Determines whether the model should automatically flush data after mutations.

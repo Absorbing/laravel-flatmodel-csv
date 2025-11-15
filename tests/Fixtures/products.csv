@@ -1,0 +1,5 @@
+id,name,price,quantity,available
+101,Widget,19.99,50,1
+102,Gadget,29.99,30,1
+103,Doohickey,9.99,100,0
+104,Thingamajig,39.99,25,1
