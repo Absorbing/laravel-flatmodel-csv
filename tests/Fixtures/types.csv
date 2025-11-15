@@ -1,0 +1,4 @@
+id,name,age,price,active,created_at
+1,Alice,25,19.99,true,2024-01-15
+2,Bob,30,29.50,false,2024-02-20
+3,Charlie,35,39.99,true,2024-03-10

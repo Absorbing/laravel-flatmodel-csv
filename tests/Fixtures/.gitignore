@@ -1,0 +1,12 @@
+# Ignore writable test files
+*_writable.csv
+*_backup*.csv
+*.bak
+temp_*
+
+# Keep fixtures
+!users.csv
+!users_headerless.csv
+!products.csv
+!empty.csv
+!types.csv

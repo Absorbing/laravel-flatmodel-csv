@@ -6,9 +6,18 @@
         "illuminate/collections": "^12.14",
         "illuminate/support": "^12.14"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "orchestra/testbench": "^9.0"
+    },
     "autoload": {
         "psr-4": {
             "FlatModel\\CsvModel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FlatModel\\CsvModel\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -22,5 +31,9 @@
                 "FlatModel\\CsvModel\\CsvModelServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage"
     }
 }
