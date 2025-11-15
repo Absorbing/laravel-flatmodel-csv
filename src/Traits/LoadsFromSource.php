@@ -7,6 +7,7 @@ use FlatModel\CsvModel\Exceptions\InvalidHandleException;
 use FlatModel\CsvModel\Exceptions\PrimaryKeyMissingException;
 use FlatModel\CsvModel\Exceptions\StreamOpenException;
 use FlatModel\CsvModel\Exceptions\InvalidRowFormatException;
+use FlatModel\CsvModel\Exceptions\MissingHeaderException;
 
 trait LoadsFromSource
 {
@@ -73,6 +74,65 @@ trait LoadsFromSource
         $this->setRows($rows);
 
         fclose($this->handle);
+    }
+
+    /**
+     * Loads the headers from the provided file handle.
+     *
+     * Behavior depends on $hasHeaders property:
+     * - If true: Reads first row as headers (unless pre-defined)
+     * - If false AND headers provided: Uses provided headers
+     * - If false AND no headers: Generates numeric indices from first data row
+     *
+     * @param resource $handle The file handle to read the CSV headers from.
+     * @return array<int,string> The loaded headers as an array.
+     * @throws MissingHeaderException If headers cannot be determined
+     */
+    protected function loadHeadersFromHandle($handle): array
+    {
+        // If headers are pre-defined, use them
+        if (!empty($this->getHeaders())) {
+            // If CSV has header row but we're using custom headers, skip the first line
+            if ($this->hasHeaders()) {
+                fgetcsv($handle, 0, $this->getDelimiter(), $this->getEnclosure(), $this->getEscape());
+            }
+            return $this->getHeaders();
+        }
+
+        // If CSV has header row, read it
+        if ($this->hasHeaders()) {
+            $headers = fgetcsv(
+                $handle,
+                0,
+                $this->getDelimiter(),
+                $this->getEnclosure(),
+                $this->getEscape()
+            );
+
+            if (!is_array($headers)) {
+                throw new MissingHeaderException("Failed to read headers from CSV file.");
+            }
+
+            $this->setHeaders(array_map('trim', $headers));
+            return $this->getHeaders();
+        }
+
+        // No header row and no pre-defined headers: generate numeric indices
+        // Peek at first row to determine column count
+        $firstRow = fgetcsv($handle, 0, $this->getDelimiter(), $this->getEnclosure(), $this->getEscape());
+
+        if (!is_array($firstRow)) {
+            throw new MissingHeaderException("Cannot determine column count - CSV file appears empty.");
+        }
+
+        // Rewind to beginning so first row gets processed as data
+        rewind($handle);
+
+        // Generate numeric column indices
+        $numericHeaders = array_map('strval', range(0, count($firstRow) - 1));
+        $this->setHeaders($numericHeaders);
+
+        return $this->getHeaders();
     }
 
     /**
@@ -160,19 +220,19 @@ trait LoadsFromSource
     abstract protected function getHeaders(): array;
 
     /**
+     * Sets the headers for the CSV file.
+     *
+     * @param array<int,string> $headers Array of column headers
+     * @return static Returns the current instance for method chaining
+     */
+    abstract protected function setHeaders(array $headers): static;
+
+    /**
      * Returns the complete set of data rows for querying.
      *
      * @return array<int,array<string,mixed>> Array of rows where each row is an associative array
      */
     abstract protected function getRows(): array;
-
-    /**
-     * Loads the headers from the provided file handle and sets them for the instance.
-     *
-     * @param resource $handle The file handle to read the CSV headers from.
-     * @return array<int,string> The loaded headers as an array.
-     */
-    abstract protected function loadHeadersFromHandle($handle): array;
 
     /**
      * Sets the data rows for the model.
@@ -188,6 +248,13 @@ trait LoadsFromSource
      * @return bool True if the model is in stream mode, false otherwise
      */
     abstract protected function isStream(): bool;
+
+    /**
+     * Checks if the CSV has a header row.
+     *
+     * @return bool True if the CSV has a header row, false otherwise
+     */
+    abstract protected function hasHeaders(): bool;
 
     /**
      * Checks if the model is writable.

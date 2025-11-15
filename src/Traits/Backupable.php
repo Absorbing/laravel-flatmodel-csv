@@ -4,6 +4,23 @@ namespace FlatModel\CsvModel\Traits;
 
 use FlatModel\CsvModel\Exceptions\BackupFailedException;
 
+/**
+ * Provides automatic backup functionality before write operations.
+ *
+ * This trait is opt-in and creates timestamped backup copies of CSV files
+ * before any modifications are written to disk.
+ *
+ * Usage:
+ * ```php
+ * class BackedUpModel extends Model
+ * {
+ *     use Writable, Backupable;
+ *
+ *     protected bool $writable = true;
+ *     protected bool $enableBackup = true;
+ * }
+ * ```
+ */
 trait Backupable
 {
     protected function backup(): void
