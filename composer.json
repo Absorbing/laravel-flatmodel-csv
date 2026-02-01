@@ -1,7 +1,9 @@
 {
     "name": "flatmodel/laravel-csv-flatmodel",
-    "version": "dev-main",
+    "description": "Eloquent-inspired data modeling system for Laravel that works with CSV files",
+    "keywords": ["laravel", "csv", "flatfile", "eloquent", "model", "data"],
     "type": "library",
+    "license": "MIT",
     "require": {
         "illuminate/collections": "^12.14",
         "illuminate/support": "^12.14"
