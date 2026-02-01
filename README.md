@@ -183,14 +183,14 @@ id,name,email
 
 ## Query Methods
 
-For interacting and querying data from the model, the following are available;
+For interacting and querying data from the model, the following are available:
 
-- `where()`
-- `first()`
-- `pluck()`
-- `get()`
-- `select()`
-- `value()`
+- `where(string $column, mixed $value)` - Filter rows by column value
+- `first()` - Get the first matching row as an array, or null if no match
+- `get()` - Get all matching rows as a Collection
+- `pluck(string $column)` - Get a Collection of values from a specific column
+- `select(string ...$columns)` - Select specific columns to return
+- `value(string $column)` - Get the first value from a column, or null if not found
 
 The model has a series of configurable properties that will enable or disable functionality.
 
@@ -289,10 +289,16 @@ FlatModel uses custom exceptions to provide clear and understandable error conte
 
 ## Testing
 
-Run PHPUnit from the root of your Laravel project or your package repo:
+Run tests using Composer:
 
 ```bash
-php artisan test
+composer test
+```
+
+Or run PHPUnit directly:
+
+```bash
+vendor/bin/phpunit
 ```
 
 ## License
