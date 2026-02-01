@@ -133,6 +133,42 @@ class StrictHeaderModel extends Model
 - Headers are still loaded/generated but not validated
 - More flexible for varying CSV structures
 
+## Type Casting
+
+CSV files store all data as strings. Use the `$cast` property to automatically convert values to specific types:
+
+```php
+use FlatModel\CsvModel\Models\Model;
+
+class Product extends Model
+{
+    protected string $path = 'data/products.csv';
+    
+    protected array $cast = [
+        'id' => 'int',
+        'price' => 'float',
+        'in_stock' => 'bool',
+        'name' => 'string',
+    ];
+}
+
+// Values are automatically cast when reading
+$product = (new Product())->where('id', 1)->first();
+// $product['id'] is now an integer, not a string
+// $product['price'] is now a float
+// $product['in_stock'] is now a boolean
+```
+
+**Supported cast types:**
+- `int` or `integer` - Cast to integer
+- `float` or `double` - Cast to floating point number
+- `bool` or `boolean` - Cast to boolean (handles "true", "false", "1", "0", etc.)
+- `string` - Cast to string
+
+Type casting is applied automatically when:
+- Reading data with `get()`, `first()`, `pluck()`, etc.
+- Writing data with `insert()`, `update()`, `upsert()`
+
 ## Working with Headerless CSV Files
 
 If your CSV file doesn't have a header row, set `$hasHeaders = false`:
