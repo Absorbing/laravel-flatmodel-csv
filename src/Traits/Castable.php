@@ -19,7 +19,7 @@ trait Castable
                 $row[$key] = match ($type) {
                     'int' => (int)$row[$key],
                     'float' => (float)$row[$key],
-                    'bool' => (bool)$row[$key],
+                    'bool' => filter_var($row[$key], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false,
                     'string' => (string)$row[$key],
                     default => $row[$key],
                 };

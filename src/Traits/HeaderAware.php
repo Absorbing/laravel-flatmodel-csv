@@ -48,10 +48,7 @@ trait HeaderAware
      */
     protected function loadHeadersFromHandle($handle): array
     {
-        // Get current file position before reading
-        $position = ftell($handle);
-
-        // If we have pre-defined headers and strict mode
+        // If we have pre-defined headers and strict mode is enabled
         if (!empty($this->headers) && $this->isStrictHeaders() && $this->hasHeaders()) {
             // Read the actual header row from CSV
             $csvHeaders = fgetcsv(
@@ -73,8 +70,26 @@ trait HeaderAware
             return $this->getHeaders();
         }
 
-        // Restore position and use parent implementation
-        fseek($handle, $position);
+        // Not in strict mode - ignore pre-defined headers and read from CSV
+        if (!$this->isStrictHeaders() && $this->hasHeaders()) {
+            // Read headers from CSV file
+            $csvHeaders = fgetcsv(
+                $handle,
+                0,
+                $this->getDelimiter(),
+                $this->getEnclosure(),
+                $this->getEscape()
+            );
+
+            if (!is_array($csvHeaders)) {
+                throw new HeaderMismatchException("Failed to read headers from CSV file.");
+            }
+
+            $this->setHeaders(array_map('trim', $csvHeaders));
+            return $this->getHeaders();
+        }
+
+        // Use parent implementation for other cases
         return parent::loadHeadersFromHandle($handle);
     }
 

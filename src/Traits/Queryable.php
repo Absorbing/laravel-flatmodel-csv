@@ -2,6 +2,7 @@
 
 namespace FlatModel\CsvModel\Traits;
 
+use FlatModel\CsvModel\Exceptions\ColumnNotFoundException;
 use Illuminate\Support\Collection;
 
 trait Queryable
@@ -79,6 +80,17 @@ trait Queryable
     }
 
     /**
+     * Retrieves the first row that matches the applied constraints.
+     *
+     * @return array|null The first matching row or null if no match found
+     */
+    public function first(): ?array
+    {
+        $result = $this->get();
+        return $result->isEmpty() ? null : $result->first();
+    }
+
+    /**
      * Retrieves a Collection containing only the values from a single column of the CSV data.
      *
      * @param string $column The name of the column to extract values from
@@ -94,18 +106,13 @@ trait Queryable
      * Retrieves the first value from a specified column in the CSV data.
      *
      * @param string $column The name of the column to extract the value from
-     * @return mixed The first value from the specified column
-     * @throws ColumnNotFoundException If the specified column does not exist in the CSV file
+     * @return mixed The first value from the specified column, or null if not found
      */
     public function value(string $column): mixed
     {
         $values = $this->pluck($column);
 
-        if ($values->isEmpty()) {
-            throw new ColumnNotFoundException("Column '{$column}' does not exist or contains no data.");
-        }
-
-        return $values->first();
+        return $values->isEmpty() ? null : $values->first();
     }
 
     /**
